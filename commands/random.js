@@ -1,5 +1,5 @@
 //Automatically generated command file
-const index = require('../torut');
+const errors = require('../utils/errorjokes');
 module.exports = {
 name: 'random',
 execute(message, args) {
@@ -10,12 +10,12 @@ execute(message, args) {
                message.channel.send("Your randomized number is " + (Math.floor(Math.random() * rand2) + rand1));
             }
             else{
-               message.channel.send("The second number need to be bigger than first. " + torut[Math.floor(Math.random() * index.torut.length)]);
+               message.channel.send("The second number need to be bigger than first. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
             }
       }
       else
       {
-            message.channel.send("You are missing a value (!nobotti clear <min> <max>). " + torut[Math.floor(Math.random() * index.torut.length)]);
+            message.channel.send("You are missing a value (!nobotti clear <min> <max>). " + errors.list[Math.floor(Math.random() * errors.list.length)]);
       }
    }
 }

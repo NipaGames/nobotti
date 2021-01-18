@@ -7,7 +7,8 @@ http.createServer(function (req, res) {
 }).listen(8080);
 
 
-require('dotenv').config();
+const dotenv = require('dotenv');
+
 const config = require('./utils/coreconfig');
 const fs = require('fs')
 const Discord = require('discord.js');
@@ -18,7 +19,11 @@ var cards = {};
 
 const PREFIX = 'n!';
 
-bot.login(process.env.TOKEN);
+bot.login(process.env.TOKEN).catch(err => {
+  dotenv.config({ path: 'C:/.tokens/nobotti/.env' });
+  bot.login(process.env.TOKEN);
+}
+);
 
 bot.commands = new Discord.Collection();
 
