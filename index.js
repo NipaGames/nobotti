@@ -20,6 +20,8 @@ var cards = {};
 const PREFIX = 'n!';
 
 bot.login(process.env.TOKEN).catch(err => {
+  //not leaking the token for you lol
+  //it is in my *local* secret folder :)
   dotenv.config({ path: 'C:/.tokens/nobotti/.env' });
   bot.login(process.env.TOKEN);
 }
