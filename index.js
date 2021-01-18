@@ -1,5 +1,6 @@
 var http = require('http');  
 
+//Create a server
 http.createServer(function (req, res) {   
   console.log("I'm alive!")
   res.write("I'm alive!");   
