@@ -1,4 +1,9 @@
-//Automatically generated command file
+//Probably most complex file of Nobotti. Read at own risk.
+
+//FINAL WARNING: THIS EVEN CONTAINS REGEXES D:
+
+//too lazy to document this spaghetti
+
 const Discord = require('discord.js');
 const fs = require('fs')
 const config = require('../utils/coreconfig')

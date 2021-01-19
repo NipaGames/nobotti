@@ -1,4 +1,3 @@
-//Imports
 const Discord = require('discord.js');
 const errors = require('../utils/errorjokes');
 

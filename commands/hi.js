@@ -1,3 +1,4 @@
+//why this even exists
 module.exports = {
     name: 'hi',
     execute(message, args) {
