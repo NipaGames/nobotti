@@ -1,0 +1,6 @@
+{
+	"server_name": "Example",
+	"premium": "boolean",
+	"muted_role": "roleid",
+	"audit_log": "channelid"
+}
