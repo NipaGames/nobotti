@@ -2,3 +2,4 @@
 /node_modules/
 /serverdata/*
 !/serverdata/example.json
+.env
