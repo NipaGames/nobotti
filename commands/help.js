@@ -40,8 +40,13 @@ module.exports = {
                         .setDescription('For admin use. Used for editing the config file of the server.')
                         .addField('raw', 'Gets the raw .json document of the config.\nUsage: !n config raw')
                         .addField('create', "Creates the config if it doesn't exist.\nUsage: !n config create")
+                        .addField('clear', "Cleares the config file.\nUsage: !n config clear")
                         .addField('smr/setmutedrole', 'Defines the muted-role.\nUsage: !n config smr/setmutedrole "role name"/@role')
+                        .addField('sdr/setdefaultrole', 'Defines the default role for someone joining.\nUsage: !n config sdr/setdefaultrole "role name"/@role (use !n sdr none to disable)')
                         .addField('sal/setauditlog', 'Defines the audit log channel.\nUsage: !n config sal/setauditlog #channel')
+                        .addField('spl/setpubliclog', 'Defines the public log channel. Sends messages here if someone leaves or joins.\nUsage: !n config spl/setpubliclog #channel')
+                        .addField('sjm/setjoinmessage', 'Defines the message for someone joining.\nUsage: !n config sjm/setjoinmessage "message"')
+                        .addField('slm/setleavemessage', 'Defines the message for someone leaving.\nUsage: !n config slm/setleavemessage "message"')
 
                     message.channel.send(exampleEmbed);
                     break;

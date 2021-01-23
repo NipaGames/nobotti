@@ -21,9 +21,21 @@ execute(message, args) {
             case 'create':
                var path = './serverdata/' + message.guild.id + ".json";
                if (fs.existsSync(path)) {
-                     message.channel.send("Config file already exists.");
+                  message.channel.send("Config file already exists.");
                } else {
-                     config.createConfig(message.guild.id, message.guild.name, message.channel);
+                  config.createConfig(message.guild.id, message.guild.name, message.channel);
+                  message.channel.send("Created the config.");
+               }
+               break;
+            case 'clear':
+               var path = './serverdata/' + message.guild.id + ".json";
+               if (!fs.existsSync(path)) {
+                   message.channel.send("This server doesn't have a config file. Use '!n config create' to create one.");
+               } else {
+                  if(args.length < 3) return message.channel.send("Are you sure? This resets the whole config file! Use '!n config clear confirm' to confirm.");
+                  if(args[2] != "confirm") return message.channel.send("Are you sure? This resets the whole config file! Use '!n config clear confirm' to confirm.");
+                  config.createConfig(message.guild.id, message.guild.name, message.channel);
+                  message.channel.send("Cleared the config.");
                }
                break;
             case 'raw':
@@ -58,6 +70,63 @@ execute(message, args) {
                      message.channel.send("This server doesn't have a config file. Use '!n config create' to create one.");
                }
                break;
+            case 'spl':
+            case 'setpubliclog':
+               if(args.length < 3) return message.channel.send("You need to select a channel. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+               var disabled = args[2] == "disabled" ? true : false;
+               if(disabled == true) {
+                     config.changeValue(message.guild.id, "public_log", "disabled");
+                     return message.channel.send('Updated the config!');
+               }
+               var path = './serverdata/' + message.guild.id + ".json";
+               if (fs.existsSync(path)) {
+                     var channel = message.content.replace(/\D/g,'');
+                     if(channel == "") return message.channel.send('You need to type the channel name after "#". Example: !n config setpubliclog #join-leave-log. To disable audit log, type !n config sal disabled. ' + torut[Math.floor(Math.random() * torut.length)]);
+                     if(message.guild.channels.cache.get(channel) === undefined) return message.channel.send("Channel not found.");
+                     config.changeValue(message.guild.id, "public_log", channel);
+                     message.channel.send('Updated the config!');
+               } else {
+                     message.channel.send("This server doesn't have a config file. Use '!n config create' to create one.");
+               }
+            break;
+            case 'sjm':
+            case 'setjoinmessage':
+               if(args.length < 3) return message.channel.send("You need to select a message. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+               var path = './serverdata/' + message.guild.id + ".json";
+               if (fs.existsSync(path)) {
+                     try {
+                        //Some very confusing regex for getting value between quotation marks
+                        var regExp = /"([^"]+)"/;
+                        var joinMessage = regExp.exec(message);
+                        if(!joinMessage[1].includes("/m")) return message.channel.send("You need to include member's name at least once in the message. Get member's name by including '/m' in the command. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+                        config.changeValue(message.guild.id, "joinmessage", joinMessage[1]);
+                        message.channel.send('Updated the config!');
+                     } catch {
+                        message.channel.send('You need to type the role name inside quotation marks or mention the role. Example: !n config setjoinmessage "/m just joined!". ' + errors.list[Math.floor(Math.random() * errors.list.length)]);
+                     }
+               } else {
+                     message.channel.send("This server doesn't have a config file. Use '!n config create' to create one.");
+               }
+            break;
+            case 'slm':
+            case 'setleavemessage':
+               if(args.length < 3) return message.channel.send("You need to select a message. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+               var path = './serverdata/' + message.guild.id + ".json";
+               if (fs.existsSync(path)) {
+                     try {
+                        //Some very confusing regex for getting value between quotation marks
+                        var regExp = /"([^"]+)"/;
+                        var leaveMessage = regExp.exec(message);                        
+                        if(!leaveMessage[1].includes("/m")) return message.channel.send("You need to include member's name at least once in the message. Get member's name by including '/m' in the command. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+                        config.changeValue(message.guild.id, "leavemessage", leaveMessage[1]);
+                        message.channel.send('Updated the config!');
+                     } catch {
+                        message.channel.send('You need to type the role name inside quotation marks or mention the role. Example: !n config setleavemessage "/m left. This is so sad.". ' + errors.list[Math.floor(Math.random() * errors.list.length)]);
+                     }
+               } else {
+                     message.channel.send("This server doesn't have a config file. Use '!n config create' to create one.");
+               }
+            break;
             case 'smr':
             case 'setmuterole':
                if(args.length < 3) return message.channel.send("You need to select a role. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
@@ -78,6 +147,36 @@ execute(message, args) {
                            message.channel.send('Updated the config!');
                         } catch {
                            message.channel.send('You need to type the role name inside quotation marks or mention the role. Example: !n config setmuterole "kiusaaja"/@kiusaaja. ' + errors.list[Math.floor(Math.random() * errors.list.length)]);
+                        }
+                     }
+               } else {
+                     message.channel.send("This server doesn't have a config file. Use '!n config create' to create one.");
+               }
+               break;
+            case 'sdr':
+            case 'setdefaultrole':
+               if(args.length < 3) return message.channel.send("You need to select a role. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+               var path = './serverdata/' + message.guild.id + ".json";
+               if (fs.existsSync(path)) {
+                     if(args[2] == "none") {
+                        config.changeValue(message.guild.id, "default_role", "none");
+                        return message.channel.send('Updated the config!');
+                     }
+                     try {
+                        //Some very confusing regex for getting value between quotation marks
+                        var regExp = /"([^"]+)"/;
+                        var roleName = regExp.exec(message);
+                        role = message.channel.guild.roles.cache.find(role => role.name === roleName[1]);
+                        if(role == undefined) return message.channel.send('Role not found!');
+                        config.changeValue(message.guild.id, "default_role", role.id);
+                        message.channel.send('Updated the config!');
+                     } catch {
+                        try {
+                           var roleName = message.mentions.roles.first();
+                           config.changeValue(message.guild.id, "default_role", roleName.id);
+                           message.channel.send('Updated the config!');
+                        } catch {
+                           message.channel.send('You need to type the role name inside quotation marks or mention the role. Example: !n config setdefaultrole "member"/@member. ' + errors.list[Math.floor(Math.random() * errors.list.length)]);
                         }
                      }
                } else {

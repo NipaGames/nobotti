@@ -4,7 +4,7 @@ const errors = require('../utils/errorjokes');
 module.exports = {
 name: 'mute',
 execute(message, args) {
-      if(message.member.hasPermission('ADMINISTRATOR') || message.member.hasPermission('MUTE_MEMBERS')) {
+      if(message.member.hasPermission('ADMINISTRATOR') || message.member.hasPermission('MANAGE_ROLES')) {
          fs.readFile("./serverdata/" + message.guild.id + ".json", 'utf8', (err,data) => {
             if (err) {
             return console.log(err);

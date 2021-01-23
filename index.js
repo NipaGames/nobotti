@@ -47,43 +47,85 @@ bot.on("guildCreate", guild => {
 
 bot.on("messageDelete", async (messageDelete) => {
   //Store deleted messages if server has a channel for it
-    config.getValue(messageDelete.guild.id, "audit_log", async(auditLog) => {
+  config.getValue(messageDelete.guild.id, "audit_log", async(auditLog) => {
 
-    //Check if (Nobotti's) audit logs are disabled
-    if(auditLog == "disabled") return;
-    var channel = messageDelete.guild.channels.cache.find(channel => channel.id === auditLog);
-    if(channel != undefined) {
-        //Wait for audit logs to store event information
-        await Discord.Util.delayFor(900);
+  //Check if (Nobotti's) audit logs are disabled
+  if(auditLog == "disabled") return;
+  var channel = messageDelete.guild.channels.cache.find(channel => channel.id === auditLog);
+  if(channel != undefined) {
+      //Wait for audit logs to store event information
+      await Discord.Util.delayFor(900);
 
-        //Fetch logs
-        const fetchedLogs = await messageDelete.guild.fetchAuditLogs({
-          limit: 6,
-          type: 'MESSAGE_DELETE'
-        }).catch(() => ({
-          entries: []
-        }));
-      
-        //Get entry
-        const auditEntry = fetchedLogs.entries.find(a =>
-          a.target.id === messageDelete.author.id &&
-          a.extra.channel.id === messageDelete.channel.id &&
-          Date.now() - a.createdTimestamp < 20000
-        );
-      
-        //Get id of user who deleted the message
-        const executor = auditEntry ? auditEntry.executor.id : messageDelete.author.id;
-      
-        const DeleteEmbed = new Discord.MessageEmbed()
-          .setTitle("Message Deleted")
-          .setColor("#fc3c3c")
-          .addField("Author", "<@" + messageDelete.author.id + ">", true)
-          .addField("Deleted By", "<@" + executor + ">", true)
-          .addField("Channel", messageDelete.channel, true)
-          .addField("Message content:", messageDelete.content || "None");
-      
-        channel.send(DeleteEmbed);
+      //Fetch logs
+      const fetchedLogs = await messageDelete.guild.fetchAuditLogs({
+        limit: 6,
+        type: 'MESSAGE_DELETE'
+      }).catch(() => ({
+        entries: []
+      }));
+    
+      //Get entry
+      const auditEntry = fetchedLogs.entries.find(a =>
+        a.target.id === messageDelete.author.id &&
+        a.extra.channel.id === messageDelete.channel.id &&
+        Date.now() - a.createdTimestamp < 20000
+      );
+    
+      //Get id of user who deleted the message
+      const executor = auditEntry ? auditEntry.executor.id : messageDelete.author.id;
+    
+      const DeleteEmbed = new Discord.MessageEmbed()
+        .setTitle("Message Deleted")
+        .setColor("#fc3c3c")
+        .addField("Author", "<@" + messageDelete.author.id + ">", true)
+        .addField("Deleted By", "<@" + executor + ">", true)
+        .addField("Channel", messageDelete.channel, true)
+        .addField("Message content:", messageDelete.content || "None");
+    
+      channel.send(DeleteEmbed);
     }
+  });
+});
+
+bot.on("guildMemberAdd", member=>{
+  config.getValue(member.guild.id, "public_log", async(publicLog) => {
+
+    //Check if (Nobotti's) public logs are disabled
+    if(publicLog == "disabled") return;
+    var channel = member.guild.channels.cache.find(channel => channel.id === publicLog);
+    if(channel != undefined) {
+        //Send join message
+        config.getValue(member.guild.id, "joinmessage", async(joinMessage) => {
+          channel.send(joinMessage.replace("/m", member));
+        });
+        //Give default role
+        config.getValue(member.guild.id, "default_role", async(defaultRole) => {
+          if(member.user.bot) return;
+          if(defaultRole == "none") return;
+            var role = member.guild.roles.cache.find(role => role.id === defaultRole);
+            if(role == undefined) {
+              return;
+            }
+            else {
+               member.roles.add(role);
+            }
+        });
+      }
+    });
+});
+
+bot.on("guildMemberRemove", member=>{
+  config.getValue(member.guild.id, "public_log", async(publicLog) => {
+
+    //Check if (Nobotti's) public logs are disabled
+    if(publicLog == "disabled") return;
+    var channel = member.guild.channels.cache.find(channel => channel.id === publicLog);
+    if(channel != undefined) {
+        //Send leave message
+        config.getValue(member.guild.id, "leavemessage", async(leaveMessage) => {
+          channel.send(leaveMessage.replace("/m", member));
+        });
+      }
     });
 });
 
