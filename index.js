@@ -123,7 +123,7 @@ bot.on("guildMemberRemove", member=>{
     if(channel != undefined) {
         //Send leave message
         config.getValue(member.guild.id, "leavemessage", async(leaveMessage) => {
-          channel.send(leaveMessage.replace("/m", member));
+          channel.send(leaveMessage.replace("/m", "**" + member.user.tag + "**"));
         });
       }
     });
