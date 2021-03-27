@@ -11,7 +11,7 @@ execute(message, args) {
          if (args.length == 2){
             if (args[1] <= 99){
                poistoMäärä = parseInt(args[1]);
-               message.channel.bulkDelete(poistoMäärä + 1).then(value => {
+               message.channel.bulkDelete(poistoMäärä + 1, true).then(value => {
                      message.channel.send("Succesfully deleted " + poistoMäärä + " messages!");
                });
             }
