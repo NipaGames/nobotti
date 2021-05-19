@@ -26,19 +26,71 @@ bot.commands = new Discord.Collection();
 //Get all files inside commands-folder
 const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
 for(const file of commandFiles) {
-    const command = require(`./commands/${file}`);
+  const command = require(`./commands/${file}`);
 
-    bot.commands.set(command.name, command);
+  bot.commands.set(command.name, command);
 }
 
-//
-bot.once('ready', () =>{
+const getApp = (guild) => {
+  const app = bot.api.applications(bot.user.id);
+  if(guild) 
+    app.guilds(guild);
+  return app;
+}
+
+bot.once('ready', async () =>{
     //This message will appear, if you host the bot. The more you know.
     console.log("This bot joined to your server to destroy it >:)");
-    //Debug message
-    bot.user.setActivity("n!help (Testing awesome new bugs...)"); 
-})
 
+    bot.user.setActivity("Loading..."); 
+    console.log("Setting up commands...");
+    const guilds = bot.guilds.cache.map(guild => guild.id);
+    guilds.forEach(async (guild) => {
+    bot.commands.forEach(async (command) => {
+      let cmd = {
+        data: {
+          name: command.name,
+          description: "idk what to put here"
+        }
+      };
+      if (command.legacy == true) {
+        cmd.data.description = "Legacy command";
+        cmd.data.options = [
+          {
+            name: "arg1",
+            description: "First argument",
+            required: false,
+            type: 3
+          },
+          {
+            name: "arg2",
+            description: "Second argument",
+            required: false,
+            type: 3
+          },
+          {
+            name: "arg3",
+            description: "Third argument",
+            required: false,
+            type: 3
+          },
+          {
+            name: "arg4",
+            description: "Fourth argument",
+            required: false,
+            type: 3
+          }
+        ];
+      } 
+      else {
+        cmd.data.description = command.description;
+      }
+      await getApp(guild).commands.post(cmd);
+    });
+  });
+  console.log("Commands ready!");
+  bot.user.setActivity("n!help (Testing awesome new bugs...)");   
+});
 
 bot.on("guildCreate", guild => {
     console.log("Joined a new guild: " + guild.name);
@@ -56,7 +108,7 @@ bot.on("messageDelete", async (messageDelete) => {
       //Wait for audit logs to store event information
       await Discord.Util.delayFor(900);
 
-      //Fetch logs
+      //Find audit log entry
       const fetchedLogs = await messageDelete.guild.fetchAuditLogs({
         limit: 6,
         type: 'MESSAGE_DELETE'
@@ -64,7 +116,7 @@ bot.on("messageDelete", async (messageDelete) => {
         entries: []
       }));
     
-      //Get entry
+      //Get audit log information
       const auditEntry = fetchedLogs.entries.find(a =>
         a.target.id === messageDelete.author.id &&
         a.extra.channel.id === messageDelete.channel.id &&
@@ -74,6 +126,19 @@ bot.on("messageDelete", async (messageDelete) => {
       //Get id of user who deleted the message
       const executor = auditEntry ? auditEntry.executor.id : messageDelete.author.id;
     
+      if(messageDelete.content.length > 1024) {
+        const DeleteEmbed = new Discord.MessageEmbed()
+        .setTitle("Message Deleted")
+        .setColor("#fc3c3c")
+        .addField("Author", "<@" + messageDelete.author.id + ">", true)
+        .addField("Deleted By", "<@" + executor + ">", true)
+        .addField("Channel", messageDelete.channel, true)
+        .addField("Content", "Message is too long to send in embed but is marked below:");
+        channel.send(DeleteEmbed);
+        channel.send(messageDelete.content);
+        return;
+      }
+
       const DeleteEmbed = new Discord.MessageEmbed()
         .setTitle("Message Deleted")
         .setColor("#fc3c3c")
@@ -82,7 +147,7 @@ bot.on("messageDelete", async (messageDelete) => {
         .addField("Channel", messageDelete.channel, true)
         .addField("Message content:", messageDelete.content || "None");
     
-      channel.send(DeleteEmbed);
+        channel.send(DeleteEmbed);
     }
   });
 });
@@ -96,7 +161,7 @@ bot.on("guildMemberAdd", member=>{
     if(channel != undefined) {
         //Send join message
         config.getValue(member.guild.id, "joinmessage", async(joinMessage) => {
-          channel.send(joinMessage.replace("/m", member));
+         callback(joinMessage.replace("/m", member));
         });
         //Give default role
         config.getValue(member.guild.id, "default_role", async(defaultRole) => {
@@ -114,7 +179,7 @@ bot.on("guildMemberAdd", member=>{
     });
 });
 
-bot.on("guildMemberRemove", member=>{
+bot.on("guildMemberRemove", member =>{
   config.getValue(member.guild.id, "public_log", async(publicLog) => {
 
     //Check if (Nobotti's) public logs are disabled
@@ -123,13 +188,47 @@ bot.on("guildMemberRemove", member=>{
     if(channel != undefined) {
         //Send leave message
         config.getValue(member.guild.id, "leavemessage", async(leaveMessage) => {
-          channel.send(leaveMessage.replace("/m", "**" + member.user.tag + "**"));
+         callback(leaveMessage.replace("/m", "**" + member.user.tag + "**"));
         });
       }
     });
 });
 
-bot.on('message', message=>{
+bot.ws.on("INTERACTION_CREATE", async (interaction) => {
+  const { name, options } = interaction.data;
+  bot.commands.forEach(async command => {
+    if(name == command.name) {
+      bot.channels.fetch(interaction.channel_id).then(async channel => {
+        const args = {};
+        let legacyArgs = [name];
+        if(options) {
+          for (const option of options) {
+            args[option.name] = option.value;
+            legacyArgs.push(option.value);
+          }
+        }
+
+        let finalArgs;
+        if(command.legacy == true)
+          finalArgs = legacyArgs;
+        else
+          finalArgs = args;
+        await bot.api.interactions(interaction.id, interaction.token).callback.post({
+          data: {
+            type: 5
+          } 
+        });
+        command.execute(channel.guild.member(interaction.member.user.id), channel, finalArgs, msg => {
+          new Discord.WebhookClient(bot.user.id, interaction.token).send(msg).catch(() => {
+            channel.send(msg)
+          });
+        });  
+      });
+    }
+  });
+});
+
+bot.on('message', message => {
     //NOTE: prefix is going to be server-specific in future
     let sCommand = message.content.substring(PREFIX.length);
     while(sCommand.startsWith(" ")) sCommand = sCommand.substring(1);
@@ -138,12 +237,13 @@ bot.on('message', message=>{
     if(!message.content.startsWith(PREFIX)) return;
 
     var found = false;
-
     //Iterate through all commands; check if specified command is found
     bot.commands.forEach(function (command) {
         if(args[0] == command.name) {
             //Execute "execute"-export of module
-            command.execute(message, args);
+            command.execute(message.member, message.channel, args, (msg) => {
+              message.channel.send(msg);
+            });
             found = true;
         }
     });
@@ -152,7 +252,6 @@ bot.on('message', message=>{
 });
 
 //wtf is this
-
 //Oh, i wanted to make blackjack command sometime ago
 //NOTE: moving to blackjack-file
 function setupCards() {

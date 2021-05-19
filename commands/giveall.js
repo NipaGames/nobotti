@@ -1,15 +1,17 @@
 module.exports = {
     name: 'giveall',
-    execute(message, args) {
-        if(message.member.hasPermission('ADMINISTRATOR') || message.member.hasPermission('MANAGE_ROLES')) {
-            var role = message.mentions.roles.first();
+    legacy: true,
+    execute(sender, channel, args, callback) {
+        const message = args.join(" ");
+        if(sender.hasPermission('ADMINISTRATOR') || sender.hasPermission('MANAGE_ROLES')) {
+            var role = channel.guild.roles.cache.get(message.replace(/\D/g,''));
             if(role == undefined) {
-                return;
+                return callback("Role is not defined!");
             }
             else {
-                message.guild.members.cache.filter(m => !m.user.bot).forEach(member => member.roles.add(role));
-                message.channel.send("Gave roles to everyone!");
+                channel.guild.members.cache.filter(m => !m.user.bot).forEach(member => member.roles.add(role)).then({});
+                callback("Gave roles to everyone!");
             }
-        } else {return message.channel.send("You are missing permissions!");}
+        } else {callback("You are missing permissions!");}
     }
 }

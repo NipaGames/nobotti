@@ -3,7 +3,8 @@
 //Kinda trash command
 module.exports = {
     name: 'creeper',
-    execute(message, args) {
-        message.channel.send('aw man');
+    legacy: true,
+    execute(sender, channel, args, callback) {
+       callback('aw man');
     }
 }

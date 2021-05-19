@@ -3,7 +3,8 @@ const errors = require('../utils/errorjokes');
 
 module.exports = {
     name: 'help',
-    execute(message, args) {
+    legacy: true,
+    execute(sender, channel, args, callback) {
         //Execute if no category given
         if(args.length < 2) {
             //General info
@@ -15,7 +16,7 @@ module.exports = {
                 .addField('Config', 'For admin use. Used for editing the config file of the server.')
                 .addField('Moderation', 'For moderating the server. For example, you can delete messages or mute members.')
 
-            message.channel.send(exampleEmbed);
+           callback(exampleEmbed);
         }
         else {
             //Info of categories
@@ -30,7 +31,7 @@ module.exports = {
                         .addField('hi', 'The most useful command of Nobotti.\nUsage: !n hi')
                         .addField('creeper (yes, seriously)', 'Aw man.\nUsage: !n creeper')
 
-                    message.channel.send(exampleEmbed);
+                   callback(exampleEmbed);
                     break;
                 //Config category
                 case 'config':
@@ -48,7 +49,7 @@ module.exports = {
                         .addField('sjm/setjoinmessage', 'Defines the message for someone joining.\nUsage: !n config sjm/setjoinmessage "message"')
                         .addField('slm/setleavemessage', 'Defines the message for someone leaving.\nUsage: !n config slm/setleavemessage "message"')
 
-                    message.channel.send(exampleEmbed);
+                   callback(exampleEmbed);
                     break;
                 //Moderation category
                 case 'moderation':
@@ -59,10 +60,10 @@ module.exports = {
                         .addField('clear', 'Used to clean many messages at once (maximum: 99).\nUsage: !n clear <amount>')
                         .addField('mute', 'Give a member "muted"-role. Needs some config setup.\nUsage: !n mute <@member>')
 
-                    message.channel.send(exampleEmbed);
+                   callback(exampleEmbed);
                     break;
                 default:
-                    message.channel.send("Please use a valid category. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
+                   callback("Please use a valid category. " + errors.list[Math.floor(Math.random() * errors.list.length)]);
                     break;
             }
         }

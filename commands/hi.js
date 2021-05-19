@@ -1,7 +1,8 @@
 //why this even exists
 module.exports = {
     name: 'hi',
-    execute(message, args) {
-        message.channel.send('Hi!');
+    description: "This is like the coolest command ever",
+    execute(sender, channel, args, callback) {
+        callback('Hi!');
     }
 }
