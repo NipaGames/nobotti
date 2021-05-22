@@ -36,7 +36,7 @@ execute(sender, channel, args, callback) {
                   if(args.length < 3) callback("Are you sure? This resets the whole config file! Use 'n! config clear confirm' to confirm.");
                   if(args[2] != "confirm") callback("Are you sure? This resets the whole config file! Use 'n! config clear confirm' to confirm.");
                   config.createConfig(channel.guild.id, channel.guild.name, channel);
-                 callback("Cleared the config.");
+                  callback("Cleared the config.");
                }
                break;
             case 'raw':
@@ -134,12 +134,12 @@ execute(sender, channel, args, callback) {
                         role = channel.guild.roles.cache.find(role => role.name === roleName[1]);
                         if(role == undefined) callback('Role not found!');
                         config.changeValue(channel.guild.id, "muted_role", role.id);
-                       callback('Updated the config!');
+                        callback('Updated the config!');
                      } catch {
                         try {
-                           let roleName = message.mentions.roles.first();
+                           let roleName = channel.guild.roles.cache.get(message.replace(/\D/g,''));
                            config.changeValue(channel.guild.id, "muted_role", roleName.id);
-                          callback('Updated the config!');
+                           callback('Updated the config!');
                         } catch {
                           callback('You need to type the role name inside quotation marks or mention the role. Example: n! config setmuterole "kiusaaja"/@kiusaaja. ' + errors.list[Math.floor(Math.random() * errors.list.length)]);
                         }

@@ -161,7 +161,7 @@ bot.on("guildMemberAdd", member=>{
     if(channel != undefined) {
         //Send join message
         config.getValue(member.guild.id, "joinmessage", async(joinMessage) => {
-         callback(joinMessage.replace("/m", member));
+          channel.send(joinMessage.replace("/m", member));
         });
         //Give default role
         config.getValue(member.guild.id, "default_role", async(defaultRole) => {
@@ -188,7 +188,7 @@ bot.on("guildMemberRemove", member =>{
     if(channel != undefined) {
         //Send leave message
         config.getValue(member.guild.id, "leavemessage", async(leaveMessage) => {
-         callback(leaveMessage.replace("/m", "**" + member.user.tag + "**"));
+          channel.send(leaveMessage.replace("/m", "**" + member.user.tag + "**"));
         });
       }
     });
